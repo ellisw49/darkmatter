@@ -60,3 +60,7 @@ class body:
     def tostring(self):
         return "" + rx + ", "+ ry + ", "+  vx + ", "+ vy + ", "+ mass
     
+    # checking what quadrant this body is in
+    def inquad(self,q):
+        return q.contains(self.rx,self.ry)
+    
