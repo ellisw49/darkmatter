@@ -19,12 +19,13 @@ class body:
         
         self.rx = rx
         self.ry = ry
-        self.vx = vy
+        self.vx = vx
         self.vy = vy
         self.mass = mass
         self.color = color
     
     # update method completes one time step
+    # UPDATE THIS FUNCTION TO RK4
     def update(self,dt):
         
         vx += dt * fx / mass
