@@ -8,45 +8,21 @@ Created on Tue Nov 11 16:37:26 2025
 
 # applying the integrator with direct summation
 
-
-
-# call body.py
-
-# generate n bodies with initial positions and velocities
-
-# for each time step
-
-    # for each body
-    
-        # reset the force on this body
-    
-        # add the force between this body and all other bodies
-        
-        # update position and velocity (advancing 1 time step)
-        
-        
-        
-        # plot the body's new position
-        
-    
-    # show the plot of all bodies / add to movie
-    
-    # advance to next time step
-    
-
 import numpy as np 
 import matplotlib.pyplot as plt 
 import matplotlib.animation as ani
 
 
+# call body.py
 from Body import body 
 
 # simuation parameters 
 
-step = 100 # number of steps 
-N = 200    # number of bodies 
+step = 50 # number of steps 
+N = 1000    # number of bodies 
 dt = 1     # time step 
 
+# generate n bodies with initial positions and velocities
 bodies = []
 for n in range(N): 
     rx = np.random.uniform()
@@ -55,27 +31,45 @@ for n in range(N):
     vy = np.random.uniform()  #normalized to 2*10^4
     
     mass = np.random.uniform()
+    color1 = "blue"
     
-    
-# ----------------------------
-# 3. Main time integration loop
-# ----------------------------
+    b = body(rx, ry, vx, vy, mass, color1)
+    bodies.append(b)
+
+
+bodies = np.array(bodies)
+
+
+# for each time step
 for step in range(step):
+    
+    
+    # creating position arrays for plotting
+    rx_arr = []
+    ry_arr = []
 
     # For each body in the system:
     for b in bodies:
         # reset force
-        b.reset_force()
+        b.resetforce()
 
         # add force from all other bodies
         for other in bodies:
             if other is not b:
-                b.add_force(other)
-
-   # update position
+                b.addforce(other)
+   
+   # update position and velocity (advancing 1 time step)
     for b in bodies:
         b.update(dt)
+        
+        rx_arr.append(b.rx)
+        ry_arr.append(b.ry)
 
+    rx_arr = np.array(rx_arr)
+    ry_arr = np.array(ry_arr)
 
-plt.plot(rx,ry)
-    
+    # show the plot of all bodies / add to movie 
+    plt.scatter(rx_arr,ry_arr)
+    plt.title(f"Timestep {step}")
+    plt.show()
+        
