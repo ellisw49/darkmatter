@@ -73,13 +73,10 @@ for step in range(step):
         
         # reset force to zero
         b.resetforce()
+        
             
-                
-        # if body in q:
-        if this_tree.quad.contains(b.rx,b.ry):
-            
-            # calculating new force
-            this_tree.update_force(b)
+        # calculating new force
+        this_tree.update_force(b)
         
     # second for loop to update positions and make plot at each step
     for b in bodies:

@@ -8,6 +8,11 @@ Created on Sun Oct 26 13:09:16 2025
 
 import numpy as np
 
+from Body import body
+
+# setting the "far" parameter
+theta = 1
+
 # defining the class for a Barnes-Hut tree object
 class tree:
     
@@ -34,6 +39,14 @@ class tree:
         else:
             return False
     
+    # defining method to find combined COM
+    def combine_bodies(self, b1, b2):
+        m1, m2 = b1.mass, b2.mass
+        x_com = (b1.rx*m1 + b2.rx*m2)/(m1 + m2)
+        y_com = (b1.ry*m1 + b2.ry*m2)/(m1 + m2)
+        return body(x_com, y_com, 0, 0, m1 + m2, 'black')
+
+    
     # insert method puts a body in this barnes-hut tree node
     def insert(self,b):
         
@@ -45,7 +58,8 @@ class tree:
         # if there is already a body in this node
         # and the node is internal (combine with current body and place in correct subquad):
         elif not self.isexternal():
-            self.body = self.body.add(self.body, b)
+            self.body = self.combine_bodies(self.body, b)
+            #self.body = self.body.add(self.body, b)
             
             # check which quadrant b is in 
             if b.inquad(self.quad.nw()):
@@ -104,7 +118,7 @@ class tree:
        
         # approximation for "far" force contributions
         else:
-            if (self.quad.length /self.body.distance_to(b)) < 2:
+            if (self.quad.length() /self.body.distance_to(b)) < theta : 
                 b.addforce(self.body)
             else:
                 if self.nw != None:

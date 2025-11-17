@@ -30,8 +30,8 @@ class body:
         self.color = color
         
         # inital force accumulation 
-        self.fx = 0.0
-        self.fy = 0.0
+        #self.fx = 0.0
+        #self.fy = 0.0
        
         
     # distance_to calculates the distance between this body and other body
@@ -58,11 +58,11 @@ class body:
         f = G * (self.mass * other.mass) / (dist**2)
         # adding this force to this body
         
-        self.fx += f * dx / dist    # Fcos(theta) = f * dx/dist
-        self.fy += f * dy / dist  
+        # self.fx += f * dx / dist    # Fcos(theta) = f * dx/dist
+        # self.fy += f * dy / dist  
+        self.fx = f * np.cos(np.arctan(dy/dx))
+        self.fy = f *np.sin(np.arctan(dy/dx))
    
-        
-            
     # update method completes one time step
     def update(self,dt): 
         
