@@ -97,32 +97,32 @@ class tree:
             self.body = None
             self.insert(b)
         
-        def update_force(self,b):
-            if self.isexternal():
-                if self.body != b:
-                    b.addforce(self.body)
-           
-            # approximation for "far" force contributions
+    def update_force(self,b):
+        if self.isexternal():
+            if self.body != b:
+                b.addforce(self.body)
+       
+        # approximation for "far" force contributions
+        else:
+            if (self.quad.length /self.body.distance_to(b)) < 2:
+                b.addforce(self.body)
             else:
-                if (self.quad.length /self.body.distance_to(b)) < 2:
-                    b.addforce(self.body)
-                else:
-                    if self.nw != None:
-                        self.nw.update_force(b)
-                    if self.sw != None:
-                        self.sw.update_force(b)
-                    if self.ne != None:
-                        self.ne.update_force(b)
-                    if self.se != None:
-                        self.se.update_force(b)
-        
-        # converting to string representation
-        def tostring(self):
-            if any([self.nw, self.sw, self.ne, self.se]):
-                return "*" + str(self.body) + "\n" + \
-                   str(self.nw or "") + \
-                   str(self.ne or "") + \
-                   str(self.sw or "") + \
-                   str(self.se or "")
-            else:
-                return " " + str(self.body) + "\n"
+                if self.nw != None:
+                    self.nw.update_force(b)
+                if self.sw != None:
+                    self.sw.update_force(b)
+                if self.ne != None:
+                    self.ne.update_force(b)
+                if self.se != None:
+                    self.se.update_force(b)
+    
+    # converting to string representation
+    def tostring(self):
+        if any([self.nw, self.sw, self.ne, self.se]):
+            return "*" + str(self.body) + "\n" + \
+               str(self.nw or "") + \
+               str(self.ne or "") + \
+               str(self.sw or "") + \
+               str(self.se or "")
+        else:
+            return " " + str(self.body) + "\n"

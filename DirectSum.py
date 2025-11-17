@@ -19,14 +19,14 @@ from Body import body
 # simuation parameters 
 
 step = 50 # number of steps 
-N = 1000    # number of bodies 
+N = 500    # number of bodies 
 dt = 1     # time step 
 
 # generate n bodies with initial positions and velocities
 bodies = []
 for n in range(N): 
-    rx = np.random.uniform()
-    ry = np.random.uniform()
+    rx = 1000*(np.random.uniform())
+    ry = 1000*(np.random.uniform())
     vx = np.random.uniform()  #normalized to 2*10^4
     vy = np.random.uniform()  #normalized to 2*10^4
     
