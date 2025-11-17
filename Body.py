@@ -60,8 +60,8 @@ class body:
         
         # self.fx += f * dx / dist    # Fcos(theta) = f * dx/dist
         # self.fy += f * dy / dist  
-        self.fx = f * np.cos(np.arctan(dy/dx))
-        self.fy = f *np.sin(np.arctan(dy/dx))
+        self.fx -= f * np.cos(np.arctan(dy/dx))
+        self.fy -= f *np.sin(np.arctan(dy/dx))
    
     # update method completes one time step
     def update(self,dt): 
@@ -73,15 +73,61 @@ class body:
         ry += dt * vy
         return vx, vy, rx, ry
         '''
-        # perhaps this works? 
-        ax = self.fx/self.mass  # calc acceleration from force/mass
+        # calc acceleration from force/mass
+        ax = self.fx/self.mass  
         ay = self.fy/self.mass 
         
-        self.vx += ax*dt        # update velocity w/ acceleration and dt
+        
+        # EULER
+        
+        # update velocity w/ acceleration and dt
+        self.vx += ax*dt        
         self.vy += ay*dt 
         
-        self.rx += self.vx *dt  # update positions w/ vdt 
+        # update positions w/ vdt 
+        self.rx += self.vx *dt  
         self.ry += self.vy *dt 
+        
+        # RK4 (pseudocode)
+        
+        
+         
+        k1x  = dt * self.fx / self.mass
+        k1y = dt * self.fy / self.mass 
+        
+        k2x =  dt * (self.fx + k1x / 2) / self.mass
+        k2y =  dt * (self.fy + k1y / 2) / self.mass
+        
+        k3x = dt * (self.fx + k2x / 2 ) / self.mass
+        k3y = dt * (self.fy + k2y / 2 ) / self.mass
+        
+        k4x = dt * (self.fx + k3x) / self.mass
+        k4y = dt * (self.fy + k3y) / self.mass
+        
+        self.rx = self.rx + (k1x + 2* k2x )
+        
+        
+        
+        
+        # a2x = f2x / m
+        # a2y = f2y / m
+     
+        # k2 = k2 formula
+        
+        # calculate force 3
+         
+        # a3x = f3x / m
+        # a3y = f3y / m
+     
+        # k3 = k3 formula
+        
+        # calculate force 4
+         
+        # a4x = f4x / m
+        # a4y = f4y / m
+     
+        # k4 = k4 formula
+        
         
     
     # putting all of the number variables in a string
