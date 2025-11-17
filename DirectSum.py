@@ -17,22 +17,26 @@ from Body import body
 
 # simuation parameters 
 
-step = 100 # number of steps 
-N = 500    # number of bodies 
-dt = 1     # time step 
+step = 50 # number of steps 
+N = 1500   # number of bodies 
+dt = 1e11  # time step 
 
 
 # defining particle properties
-mass = 10e50 # uniform mass in kg
+mass = 2e31 # uniform mass in kg
 color1 = "red"
-windowsize = 3.086e19 # 1 kpc
-vrange = 2e4 # maximum velocity
+windowsize = 3.086e16 # 1 kpc
+vrange = 0.0# maximum velocity
 
-# generate n bodies with initial positions and velocities
+# generate n 0bodies with initial positions and velocities
 bodies = []
 for n in range(N): 
-    rx = windowsize*(np.random.uniform())
-    ry = windowsize*(np.random.uniform())
+    # rx = windowsize*(np.random.uniform())
+    # ry = windowsize*(np.random.uniform())
+    sigma = windowsize / 5   # about 0.2 pc core
+    rx = np.random.normal(0, sigma)
+    ry = np.random.normal(0, sigma)
+
     vx = vrange*(2*np.random.uniform()-1)  #normalized to 2*10^4
     vy = vrange*(2*np.random.uniform()-1) #normalized to 2*10^4
     
@@ -61,8 +65,9 @@ bodies = np.array(bodies)
 #             if other is not b:
 #                 b.addforce(other)
 
-fig, ax = plt.subplots(figsize=(6,6))
-scat = ax.scatter([b.rx for b in bodies], [b.ry for b in bodies], s=10)
+fig, ax = plt.subplots(figsize=(6,6),facecolor='black')
+ax.set_facecolor("black")
+scat = ax.scatter([b.rx for b in bodies], [b.ry for b in bodies], s=1, c='white')
 ax.set_title("Direct N-body Simulation")
 
 
