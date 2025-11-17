@@ -10,28 +10,31 @@ Created on Tue Nov 11 16:37:26 2025
 
 import numpy as np 
 import matplotlib.pyplot as plt 
-import matplotlib.animation as ani
-
+import matplotlib.animation as animation
 
 # call body.py
 from Body import body 
 
 # simuation parameters 
 
-step = 50 # number of steps 
+step = 100 # number of steps 
 N = 500    # number of bodies 
 dt = 1     # time step 
+
+
+# defining particle properties
+mass = 10e50 # uniform mass in kg
+color1 = "red"
+windowsize = 3.086e19 # 1 kpc
+vrange = 2e4 # maximum velocity
 
 # generate n bodies with initial positions and velocities
 bodies = []
 for n in range(N): 
-    rx = 1000*(np.random.uniform())
-    ry = 1000*(np.random.uniform())
-    vx = np.random.uniform()  #normalized to 2*10^4
-    vy = np.random.uniform()  #normalized to 2*10^4
-    
-    mass = np.random.uniform()
-    color1 = "blue"
+    rx = windowsize*(np.random.uniform())
+    ry = windowsize*(np.random.uniform())
+    vx = vrange*(2*np.random.uniform()-1)  #normalized to 2*10^4
+    vy = vrange*(2*np.random.uniform()-1) #normalized to 2*10^4
     
     b = body(rx, ry, vx, vy, mass, color1)
     bodies.append(b)
@@ -40,36 +43,69 @@ for n in range(N):
 bodies = np.array(bodies)
 
 
-# for each time step
-for step in range(step):
+# # for each time step
+# for step in range(step):
     
     
-    # creating position arrays for plotting
-    rx_arr = []
-    ry_arr = []
+#     # creating position arrays for plotting
+#     rx_arr = []
+#     ry_arr = []
 
-    # For each body in the system:
+#     # For each body in the system:
+#     for b in bodies:
+#         # reset force
+#         b.resetforce()
+
+#         # add force from all other bodies
+#         for other in bodies:
+#             if other is not b:
+#                 b.addforce(other)
+
+fig, ax = plt.subplots(figsize=(6,6))
+scat = ax.scatter([b.rx for b in bodies], [b.ry for b in bodies], s=10)
+ax.set_title("Direct N-body Simulation")
+
+
+def update(frame):
+    # 1. Reset forces
     for b in bodies:
-        # reset force
         b.resetforce()
-
-        # add force from all other bodies
-        for other in bodies:
-            if other is not b:
+    
+    # 2. Compute pairwise forces (direct summation)
+    for i, b in enumerate(bodies):
+        for j, other in enumerate(bodies):
+            if i != j:
                 b.addforce(other)
-   
-   # update position and velocity (advancing 1 time step)
+    
+    # 3. Update positions
     for b in bodies:
         b.update(dt)
+    
+    # 4. Update scatter plot
+    scat.set_offsets([[b.rx, b.ry] for b in bodies])
+    ax.set_title(f"Timestep {frame}")
+    return scat
+    
+ani = animation.FuncAnimation(fig, update, frames=step, interval=100, blit=False)
+
+# 5. Save the animation as a GIF using PillowWriter
+writer = animation.PillowWriter(fps=20, metadata=dict(artist='Me'), bitrate=1800)
+ani.save("test.gif",writer=writer)
+plt.show()
+
+
+   # # update position and velocity (advancing 1 time step)
+   #  for b in bodies:
+   #      b.update(dt)
         
-        rx_arr.append(b.rx)
-        ry_arr.append(b.ry)
+   #      rx_arr.append(b.rx)
+   #      ry_arr.append(b.ry)
 
-    rx_arr = np.array(rx_arr)
-    ry_arr = np.array(ry_arr)
+   #  rx_arr = np.array(rx_arr)
+   #  ry_arr = np.array(ry_arr)
 
-    # show the plot of all bodies / add to movie 
-    plt.scatter(rx_arr,ry_arr)
-    plt.title(f"Timestep {step}")
-    plt.show()
+   #  # show the plot of all bodies / add to movie 
+   #  plt.scatter(rx_arr,ry_arr)
+   #  plt.title(f"Timestep {step}")
+   #  plt.show()
         
