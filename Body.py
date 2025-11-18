@@ -30,8 +30,8 @@ class body:
         self.color = color
         
         # inital force accumulation 
-        #self.fx = 0.0
-        #self.fy = 0.0
+        self.fx = 0.0
+        self.fy = 0.0
        
         
     # distance_to calculates the distance between this body and other body
@@ -89,8 +89,6 @@ class body:
         self.ry += self.vy *dt 
         
         # RK4 (pseudocode)
-        
-        
          
         k1x  = dt * self.fx / self.mass
         k1y = dt * self.fy / self.mass 
@@ -104,7 +102,10 @@ class body:
         k4x = dt * (self.fx + k3x) / self.mass
         k4y = dt * (self.fy + k3y) / self.mass
         
-        self.rx = self.rx + (k1x + 2* k2x )
+        self.rx = self.rx + (k1x + 2 * k2x + 2 * k3x + k4x) / 6
+        self.ry = self.ry + (k1y + 2 * k2y + 2 * k3y + k4y) / 6 
+        
+        #return (self.rx , self.ry)
         
         
         
@@ -137,6 +138,4 @@ class body:
     # checking what quadrant this body is in
     def inquad(self,q):
         return q.contains(self.rx,self.ry)
-    
-
     
