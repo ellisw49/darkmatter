@@ -91,7 +91,7 @@ class body:
             def fupdate(temp_body):
                 fx, fy = 0.0, 0.0
                 for b in bodies:
-                    if b is not self:
+                    if b is not temp_body:
                         dx = b.rx - temp_body.rx
                         dy = b.ry - temp_body.ry
                         dist = np.sqrt(dx*dx + dy*dy + eps*eps)
@@ -113,11 +113,11 @@ class body:
         # first order evaluation
         
         # velocity step
-        k1v = a0 * dt
+        k1v = a0 
         v1real = v0 + k1v * dt
         
         # position step
-        k1r = v0 * dt
+        k1r = v0 
         r1 = r0 + k1r * dt
         
         # force evaluation from step 1
@@ -137,15 +137,15 @@ class body:
         self.resetforce()
         
         # velocity step
-        k2v = (a1 + (k1v / 2)) * dt
-        v2real = v1 + (k1v + k2v) * dt / 2
+        k2v = (a1 + (k1v / 2))
+        v2real = v1 + (k1v + k2v)* dt / 2
         
         # position step
-        k2r = (v1 + (k1r / 2))  * dt
+        k2r = (v1 + (k1r / 2))
         r2 = r1 + (k1r + k2r) * dt / 2
         
         # force evaluation from step 2
-        temp_pos1 = r0 + dt * k2r
+        temp_pos1 = r0 + k2r * dt
         
         temp_body = body(temp_pos1[0], temp_pos1[1], v1[0], v1[1], mass, self.color)
         self.mass = 0  # replace this body w/ temp body for force calculation 
@@ -161,15 +161,15 @@ class body:
         self.resetforce()
         
         # velocity step
-        k3v = (a2 + (k2v / 2)) * dt
+        k3v = (a2 + (k2v / 2))
         v3real = v2 + (k2v + k3v) * dt / 2 
     
         # position step
-        k3r = (v2 + (k2r / 2)) * dt 
-        r3 = r2 + (k2r + k3r) * dt / 2 
+        k3r = (v2 + (k2r / 2))
+        r3 = r2 + (k2r + k3r) *dt  / 2 
         
         # force evaluation from step 3
-        temp_pos2 = r0 + dt * k3r
+        temp_pos2 = r0 +  k3r*dt
         
         temp_body = body(temp_pos2[0], temp_pos2[1], v2[0], v2[1], mass, self.color)
         self.mass = 0  # replace force.body w/ temp body for force calculation 
@@ -182,16 +182,16 @@ class body:
         
         # acceleration and velocity from 3rd order step
         a3 = f3 /mass
-        v3 = v0 + k3v * dt 
+        v3 = v0 + k3v * dt
         
         self.resetforce()
         
         # velocity step
-        k4v = (a3 + (k3v) ) * dt 
-        #v4real = v3 + (k4v) * dt # long live pookie rip
+        k4v = (a3 + (k3v) ) 
+       
         
         # position step
-        k4r = (v3 + (k3r))* dt 
+        k4r = (v3 + (k3r)) 
         #r4  = r3 + (k4r) * dt 
     
         # final rk4 evaluation
