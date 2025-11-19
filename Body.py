@@ -100,6 +100,7 @@ class body:
                         fy += f * dy/dist
                 return np.array([fx, fy])
            
+           
         # RK4 
         
         # evaluate initial acceleration
@@ -113,11 +114,11 @@ class body:
         # first order evaluation
         
         # velocity step
-        k1v = a0 
+        k1v = a0 * dt
         v1real = v0 + k1v * dt
         
         # position step
-        k1r = v0 
+        k1r = v0 * dt
         r1 = r0 + k1r * dt
         
         # force evaluation from step 1
@@ -137,15 +138,15 @@ class body:
         self.resetforce()
         
         # velocity step
-        k2v = (a1 + (k1v / 2))
-        v2real = v1 + (k1v + k2v)* dt / 2
+        k2v = (a1 + (k1v / 2)) * dt
+        v2real = v1 + (k1v + k2v) * dt / 2
         
         # position step
-        k2r = (v1 + (k1r / 2))
+        k2r = (v1 + (k1r / 2))  * dt
         r2 = r1 + (k1r + k2r) * dt / 2
         
         # force evaluation from step 2
-        temp_pos1 = r0 + k2r * dt
+        temp_pos1 = r0 + dt * k2r
         
         temp_body = body(temp_pos1[0], temp_pos1[1], v1[0], v1[1], mass, self.color)
         self.mass = 0  # replace this body w/ temp body for force calculation 
@@ -161,15 +162,15 @@ class body:
         self.resetforce()
         
         # velocity step
-        k3v = (a2 + (k2v / 2))
+        k3v = (a2 + (k2v / 2)) * dt
         v3real = v2 + (k2v + k3v) * dt / 2 
     
         # position step
-        k3r = (v2 + (k2r / 2))
-        r3 = r2 + (k2r + k3r) *dt  / 2 
+        k3r = (v2 + (k2r / 2)) * dt 
+        r3 = r2 + (k2r + k3r) * dt / 2 
         
         # force evaluation from step 3
-        temp_pos2 = r0 +  k3r*dt
+        temp_pos2 = r0 + dt * k3r
         
         temp_body = body(temp_pos2[0], temp_pos2[1], v2[0], v2[1], mass, self.color)
         self.mass = 0  # replace force.body w/ temp body for force calculation 
@@ -182,16 +183,16 @@ class body:
         
         # acceleration and velocity from 3rd order step
         a3 = f3 /mass
-        v3 = v0 + k3v * dt
+        v3 = v0 + k3v * dt 
         
         self.resetforce()
         
         # velocity step
-        k4v = (a3 + (k3v) ) 
-       
+        k4v = (a3 + (k3v) ) * dt 
+        #v4real = v3 + (k4v) * dt # long live pookie rip
         
         # position step
-        k4r = (v3 + (k3r)) 
+        k4r = (v3 + (k3r))* dt 
         #r4  = r3 + (k4r) * dt 
     
         # final rk4 evaluation
