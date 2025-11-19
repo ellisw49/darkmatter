@@ -8,11 +8,12 @@ Created on Sat Oct 25 18:22:09 2025
 
 import numpy as np
 
+
+# defining class-wide variables G and solar mass
+G = 39.5
+eps = 0.1 # au
+
 class body:
-    
-    # defining class-wide variables G and solar mass
-    G = 6.673e-11
-    solarmass=1.98892e30
     
     # initializing body object with position, velocity, mass, color
     def  __init__(self, rx, ry, vx, vy, mass, color):
@@ -35,11 +36,11 @@ class body:
        
         
     # distance_to calculates the distance between this body and other body
-    def distance_to(self, other):
+    def distance_to(self, other, eps):
         
-        dx = self.rx - other.rx
-        dy = self.ry - other.ry
-        return np.sqrt(dx **2 + dy **2)
+        dx = other.rx - self.rx
+        dy = other.ry - self.ry
+        return np.sqrt(dx **2 + dy **2 + eps **2)
     
     # zeroing force between iterations
     def resetforce(self):
@@ -49,87 +50,170 @@ class body:
     # calculating the force between this body and other body
     def addforce(self,other):
         
-        G = 6.673e-11
-        # calculating distance between the particles
+        # adding softening factor
+        
         dx = other.rx - self.rx
         dy = other.ry - self.ry
-        dist = np.sqrt(dx**2 + dy**2)
+        
+        dist = body.distance_to(self,other,eps)
+
         # calculating gravitational force
         f = G * (self.mass * other.mass) / (dist**2)
         # adding this force to this body
+ 
+        self.fx += f * dx / dist
+        self.fy += f * dy / dist
+        return np.array([self.fx, self.fy])
+
+    
+    def update(self, dt, order, method, bodies = None):
         
-        # self.fx += f * dx / dist    # Fcos(theta) = f * dx/dist
-        # self.fy += f * dy / dist  
-        self.fx -= f * np.cos(np.arctan(dy/dx))
-        self.fy -= f *np.sin(np.arctan(dy/dx))
-   
-    # update method completes one time step
-    def update(self,dt): 
-        
+        # setting up force aggregations for barnes-hut vs. direct sum
+        if method == 'BH':
+            def fupdate(body):
+                from Tree import tree
+                from BarnesHut import this_tree
+                force = this_tree.update_force(self) #(body)
+                return np.array([self.fx, self.fy])   
+               #return force 
+
         '''
-        vx += dt * fx / mass
-        vy += dt * fy / mass
-        rx += dt * vx
-        ry += dt * vy
-        return vx, vy, rx, ry
+        if method == 'DS':
+            
+            def fupdate(body):
+                force = np.array([self.fx,self.fy])
+                for b in bodies:
+                    if b is not self:
+                        force += b.addforce(b)  # was originally (body, b)
         '''
-        # calc acceleration from force/mass
-        ax = self.fx/self.mass  
-        ay = self.fy/self.mass 
+        
+        if method == "DS":
+            def fupdate(temp_body):
+                fx, fy = 0.0, 0.0
+                for b in bodies:
+                    if b is not self:
+                        dx = b.rx - temp_body.rx
+                        dy = b.ry - temp_body.ry
+                        dist = np.sqrt(dx*dx + dy*dy + eps*eps)
+                        f = G * mass * b.mass / dist**2
+                        fx += f * dx/dist
+                        fy += f * dy/dist
+                return np.array([fx, fy])
+           
+        # RK4 
+        
+        # evaluate initial acceleration
+        mass = self.mass
+        f0 = np.array([self.fx,self.fy])
+        a0 = f0 / mass
+        v0 = np.array([self.vx,self.vy])
+        r0 = np.array([self.rx,self.ry])
         
         
-        # EULER
+        # first order evaluation
         
-        # update velocity w/ acceleration and dt
-        self.vx += ax*dt        
-        self.vy += ay*dt 
+        # velocity step
+        k1v = a0 * dt
+        v1real = v0 + k1v * dt
         
-        # update positions w/ vdt 
-        self.rx += self.vx *dt  
-        self.ry += self.vy *dt 
+        # position step
+        k1r = v0 * dt
+        r1 = r0 + k1r * dt
         
-        # RK4 (pseudocode)
-         
-        k1x  = dt * self.fx / self.mass
-        k1y = dt * self.fy / self.mass 
+        # force evaluation from step 1
+        temp_pos = r0 + (k1r / 2) * dt # half step in the first order direction
+
+        temp_body = body(temp_pos[0], temp_pos[1], v0[0], v0[1], mass, self.color)
+        self.mass = 0  # replace force.body w/ temp body for force calculation 
+        f1 = fupdate(temp_body)
+        self.mass = mass
         
-        k2x =  dt * (self.fx + k1x / 2) / self.mass
-        k2y =  dt * (self.fy + k1y / 2) / self.mass
+        # second order evaluation
         
-        k3x = dt * (self.fx + k2x / 2 ) / self.mass
-        k3y = dt * (self.fy + k2y / 2 ) / self.mass
+        # acceleration and velocity from first order half step
+        a1 = f1 / mass
+        v1 = v0 + k1v * dt / 2
         
-        k4x = dt * (self.fx + k3x) / self.mass
-        k4y = dt * (self.fy + k3y) / self.mass
+        self.resetforce()
         
-        self.rx = self.rx + (k1x + 2 * k2x + 2 * k3x + k4x) / 6
-        self.ry = self.ry + (k1y + 2 * k2y + 2 * k3y + k4y) / 6 
+        # velocity step
+        k2v = (a1 + (k1v / 2)) * dt
+        v2real = v1 + (k1v + k2v) * dt / 2
         
-        #return (self.rx , self.ry)
+        # position step
+        k2r = (v1 + (k1r / 2))  * dt
+        r2 = r1 + (k1r + k2r) * dt / 2
         
+        # force evaluation from step 2
+        temp_pos1 = r0 + dt * k2r
         
+        temp_body = body(temp_pos1[0], temp_pos1[1], v1[0], v1[1], mass, self.color)
+        self.mass = 0  # replace this body w/ temp body for force calculation 
+        f2 = fupdate(temp_body)
+        self.mass = mass  
         
+        # third order evaluation 
         
-        # a2x = f2x / m
-        # a2y = f2y / m
+        # acceleration and velocity from 2nd order step
+        a2 = f2 / mass
+        v2 = v0 + k2v * dt
+        
+        self.resetforce()
+        
+        # velocity step
+        k3v = (a2 + (k2v / 2)) * dt
+        v3real = v2 + (k2v + k3v) * dt / 2 
+    
+        # position step
+        k3r = (v2 + (k2r / 2)) * dt 
+        r3 = r2 + (k2r + k3r) * dt / 2 
+        
+        # force evaluation from step 3
+        temp_pos2 = r0 + dt * k3r
+        
+        temp_body = body(temp_pos2[0], temp_pos2[1], v2[0], v2[1], mass, self.color)
+        self.mass = 0  # replace force.body w/ temp body for force calculation 
+
+        f3 = fupdate(temp_body)
+        
+        self.mass = mass
+        
+        # fourth order evaluation
+        
+        # acceleration and velocity from 3rd order step
+        a3 = f3 /mass
+        v3 = v0 + k3v * dt 
+        
+        self.resetforce()
+        
+        # velocity step
+        k4v = (a3 + (k3v) ) * dt 
+        #v4real = v3 + (k4v) * dt # long live pookie rip
+        
+        # position step
+        k4r = (v3 + (k3r))* dt 
+        #r4  = r3 + (k4r) * dt 
+    
+        # final rk4 evaluation
+        
+        v4 = v0 + (dt / 6) * (k1v + 2 * k2v + 2 * k3v + k4v)
+        r4 = r0 + (dt / 6) * (k1r + 2 * k2r + 2 * k3r + k4r)
+        
+        # returning the values
+        if order == 1:
+            self.rx , self.ry = r1
+            self.vx, self.vy = v1real
+        if order == 2:
+            self.rx , self.ry = r2
+            self.vx, self.vy = v2real
+        if order == 3:
+            self.rx , self.ry = r3
+            self.vx, self.vy = v3real
+        if order == 4:
+            self.rx , self.ry = r4
+            self.vx, self.vy = v4
+            
      
-        # k2 = k2 formula
-        
-        # calculate force 3
-         
-        # a3x = f3x / m
-        # a3y = f3y / m
-     
-        # k3 = k3 formula
-        
-        # calculate force 4
-         
-        # a4x = f4x / m
-        # a4y = f4y / m
-     
-        # k4 = k4 formula
-        
-        
     
     # putting all of the number variables in a string
     def tostring(self):
