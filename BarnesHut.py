@@ -24,9 +24,10 @@ from nbody_anim import animate_simulation
 
 # generate N bodies with initial positions and velocities
 
-N = 100 # number of bodies
-dt = 1
-step = 100 # number of steps
+
+N = 500 # number of bodies
+dt = 0.1
+step = 300 # number of steps
 
 # defining particle properties
 
