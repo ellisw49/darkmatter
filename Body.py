@@ -11,7 +11,7 @@ import numpy as np
 
 # defining class-wide variables G and solar mass
 G = 39.5
-eps = 0.2 # au
+eps = 0.5 # au
 
 class body:
     

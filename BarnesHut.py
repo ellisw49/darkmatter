@@ -24,16 +24,16 @@ from nbody_anim import animate_simulation
 
 
 # defining particle properties / simulation parameters
-order = 2
+order = 4
 meth = 'BH'
-N = 2 # number of bodies
+N = 100 # number of bodies
 dt = 0.1 # years
-step = 10 # number of steps
+step = 200 # number of steps
 windowsize = 10 # AU
 
 
 
-bodies = init.makebodies_bigmass()
+bodies = init.makebodies_test(N)
 
 # def make_body():
 #     #rx = windowsize * np.random.uniform()
@@ -122,7 +122,7 @@ plt.plot(steps,k_energy,label="Kinetic Energy")
 plt.plot(steps,gp_energy,label="Gravitational Potential Energy")
 plt.legend()
 plt.title(f"Energy of System vs. Time for {meth} to order {order}")
-plt.xlabel(f"Time in steps, dt = {dt}")
+plt.xlabel(f"Time in steps, dt = {dt} years")
 plt.show()
 
 
