@@ -9,8 +9,9 @@ Created on Sun Oct 26 13:09:16 2025
 import numpy as np
 
 from Body import body
+from Body import eps
 
-# setting the "far" parameter
+# setting the "far" parameter and softening parameter
 theta = 1
 
 # defining the class for a Barnes-Hut tree object
@@ -44,7 +45,13 @@ class tree:
         m1, m2 = b1.mass, b2.mass
         x_com = (b1.rx*m1 + b2.rx*m2)/(m1 + m2)
         y_com = (b1.ry*m1 + b2.ry*m2)/(m1 + m2)
-        return body(x_com, y_com, 0, 0, m1 + m2, 'black')
+        
+        vx_com = (b1.vx*m1 + b2.vx*m2)/(m1 + m2)
+        vy_com = (b1.vy*m1 + b2.vy*m2)/(m1 + m2)
+        
+        comcolor = b1.color # making the new body the color of the first body
+        
+        return body(x_com, y_com, vx_com, vy_com, m1 + m2, comcolor)
 
     
     # insert method puts a body in this barnes-hut tree node
@@ -63,63 +70,76 @@ class tree:
             
             # check which quadrant b is in 
             if b.inquad(self.quad.nw()):
-                if self.nw == None:
-                    self.nw = tree(self.quad.nw)
                 self.nw.insert(b)
             
             elif b.inquad(self.quad.sw()):
-                if self.sw == None:
-                    self.sw = tree(self.quad.sw)
                 self.sw.insert(b)
             
             elif b.inquad(self.quad.ne()):
-                if self.ne == None:
-                    self.ne = tree(self.quad.ne)
                 self.ne.insert(b)
             
             elif b.inquad(self.quad.se()):
-                if self.se == None:
-                    self.se = tree(self.quad.se)
                 self.se.insert(b)
             
             # or if its an external node (create new trees):
-            else:
-                c = self.body # c is the body that was already there
+        else:
+            c = self.body # c is the body that was already there
+            
+            # make 4 subquads
+            self.nw = tree(self.quad.nw())
+            self.sw = tree(self.quad.sw())
+            self.se = tree(self.quad.se())
+            self.ne = tree(self.quad.ne())
+            
+            # put body c in one of this tree's subquads
+            if c.inquad(self.nw.quad):
+                self.nw.insert(c)
+            
+            if c.inquad(self.sw.quad):
+                self.sw.insert(c)
+            
+            if c.inquad(self.ne.quad):
+                self.ne.insert(c)
+            
+            if c.inquad(self.se.quad):
+                self.se.insert(c)
+            
+            # put body b in one of this tree's subquads
+            if b.inquad(self.nw.quad):
+                self.nw.insert(b)
+            
+            if b.inquad(self.sw.quad):
+                self.sw.insert(b)
+            
+            if b.inquad(self.ne.quad):
+                self.ne.insert(b)
+            
+            if b.inquad(self.se.quad):
+                self.se.insert(b)
                 
-                # put body c in a new tree (one of this tree's subquads)
-                if c.inquad(self.quad.nw()):
-                    if self.nw is None:
-                        self.nw = tree(self.quad.nw)
-                    self.nw.insert(c)
-                
-                if c.inquad(self.quad.sw()):
-                    if self.sw is None:
-                        self.sw = tree(self.quad.sw)
-                    self.sw.insert(c)
-                
-                if c.inquad(self.quad.ne()):
-                    if self.ne is None:
-                        self.ne = tree(self.quad.ne)
-                    self.ne.insert(c)
-                
-                if c.inquad(self.quad.se()):
-                    if self.se is None:
-                        self.se = tree(self.quad.se)
-                    self.se.insert(c)
+            # combine cuurent body and new body for internal node 
+            self.body = self.combine_bodies(c, b)
+            
                 
             # clear old body and insert new body
-            self.body = None
-            self.insert(b)
+            #self.body = None
+            #self.insert(b)
         
     def update_force(self,b):
         if self.isexternal():
-            if self.body != b:
+            if (self.body is not None) and (self.body != b):
                 b.addforce(self.body)
+                
+                # return statement added for type error
+                return np.array([b.fx,b.fy])
+
        
         # approximation for "far" force contributions
         else:
-            if (self.quad.length() /self.body.distance_to(b)) < theta : 
+            if (self.quad.length /self.body.distance_to(b,eps)) < theta : 
                 b.addforce(self.body)
+                return np.array([b.fx,b.fy])
+            
             else:
                 if self.nw != None:
                     self.nw.update_force(b)
@@ -129,6 +149,9 @@ class tree:
                     self.ne.update_force(b)
                 if self.se != None:
                     self.se.update_force(b)
+                
+            # return updated forces from b after all children
+            return np.array([b.fx, b.fy])
     
     # converting to string representation
     def tostring(self):
