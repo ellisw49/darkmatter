@@ -22,22 +22,18 @@ import Initialize as init
 from nbody_anim import animate_simulation
 
 
-# generate N bodies with initial positions and velocities
 
-
-N = 500 # number of bodies
-dt = 0.1
-step = 300 # number of steps
-
-# defining particle properties
-
-#mass = 10e31 # uniform mass in kg
-#color1 = "red"
+# defining particle properties / simulation parameters
+order = 2
+meth = 'BH'
+N = 2 # number of bodies
+dt = 0.1 # years
+step = 10 # number of steps
 windowsize = 10 # AU
-#vrange = 2e4 # maximum velocity
 
 
-bodies = init.makebodies_test(N)
+
+bodies = init.makebodies_bigmass()
 
 # def make_body():
 #     #rx = windowsize * np.random.uniform()
@@ -64,19 +60,24 @@ bodies = init.makebodies_test(N)
 og_quad = quad(windowsize/2,windowsize/2,windowsize)
 this_tree = tree(og_quad)
 
-# lists to store all positions FOR ANIMATION
-all_rx_arrs = []
-all_ry_arrs = []
+# # lists to store all positions FOR ANIMATION
+# all_rx_arrs = []
+# all_ry_arrs = []
+
+# initializing energy array
+energy_arr = np.zeros(3)
 
 
 def barnes_hut_step(bodies, dt):
+    
     # build tree each step
     og_quad = quad(windowsize/2, windowsize/2, windowsize)
     this_tree = tree(og_quad)
-
-    
     for b in bodies:
         this_tree.insert(b)
+
+    # defining and zeroing energy at this time step
+    this_energy = 0
 
     # compute forces
     for b in bodies:
@@ -85,18 +86,44 @@ def barnes_hut_step(bodies, dt):
 
     # update positions
     for b in bodies:
-        b.update(dt, 4, "BH", bodies)
+        
+        #b.update(dt, 4, "BH", bodies)
+        
+        # saving the energy for this body from the update function return
+        this_b_energy = b.update(dt, order, meth, bodies)
+        
+        # adding it to the running total of all bodies' energy at this time step
+        this_energy += this_b_energy
+    
+    # making the stepper function return the energy at this step
+    return this_energy
+
 
 # run animation
-animate_simulation(
+
+anim, energy_arr = animate_simulation(
     bodies=bodies,
     step_function=barnes_hut_step,
     frames=step,
     dt=dt,
     save="bh.gif"
 )
-plt.show()
 
+#Extracting each type of energy to plot
+tot_energy = energy_arr[:,0]
+k_energy = energy_arr[:,1]
+gp_energy = energy_arr[:,2]
+steps = np.arange(len(tot_energy))
+
+plt.close('all')
+plt.figure(figsize=(8,6))
+plt.plot(steps,tot_energy,label="Total System Energy")
+plt.plot(steps,k_energy,label="Kinetic Energy")
+plt.plot(steps,gp_energy,label="Gravitational Potential Energy")
+plt.legend()
+plt.title(f"Energy of System vs. Time for {meth} to order {order}")
+plt.xlabel(f"Time in steps, dt = {dt}")
+plt.show()
 
 
 # # stepping through time

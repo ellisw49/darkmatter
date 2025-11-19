@@ -38,6 +38,17 @@ def makebodies_test(N):
     return bodies
 
 
+def makebodies_bigmass():
+    # generating one big body and one little body
+    
+    windowsize = 10 # AU
+    
+    b_big = body(0,0,0,0,100,"white")
+    b_little = body(0.7*windowsize,0.7*windowsize,0,0,1,"blue")
+    
+    bodies = [b_big,b_little]
+    return bodies
+
 # # defining universal animation protocall
 # def ani_setup():
 #     fig, ax = plt.subplots(figsize=(6,6),facecolor='black')

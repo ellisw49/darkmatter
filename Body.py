@@ -11,7 +11,7 @@ import numpy as np
 
 # defining class-wide variables G and solar mass
 G = 39.5
-eps = 0.1 # au
+eps = 0.2 # au
 
 class body:
     
@@ -95,7 +95,7 @@ class body:
                         dx = b.rx - temp_body.rx
                         dy = b.ry - temp_body.ry
                         dist = np.sqrt(dx*dx + dy*dy + eps*eps)
-                        f = G * mass * b.mass / dist**2
+                        f = G * temp_body.mass * b.mass / dist**2
                         fx += f * dx/dist
                         fy += f * dy/dist
                 return np.array([fx, fy])
@@ -212,7 +212,34 @@ class body:
         if order == 4:
             self.rx , self.ry = r4
             self.vx, self.vy = v4
+        
+        # calculating kinetic energy of this body at a particular time step:
+        
+        # K = (1/2) m v^2
             
+        K = 0
+        vel_mag = np.sqrt(self.vx **2 + self.vy ** 2)  
+        K = (self.mass * vel_mag ** 2) / 2
+        
+        # calculating the gravitational potential energy of this body at a particular timestep
+        
+        # U = (-G mi mj / radius) summed over all other bodies
+        
+        U = 0
+        for b in bodies:
+            if b is not self:
+                dx = b.rx - self.rx
+                dy = b.ry - self.ry
+                dist = np.sqrt(dx*dx + dy*dy)
+                U += -G * (self.mass * b.mass) / dist
+                
+        # calculating total energy 
+        E = U + K
+        
+        # defining the function return as a np array of total, kinetic, potential energy
+        energy = np.array([E,K,U])
+        return energy
+        
      
     
     # putting all of the number variables in a string
