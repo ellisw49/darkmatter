@@ -49,6 +49,15 @@ def makebodies_bigmass():
     bodies = [b_big,b_little]
     return bodies
 
+
+def earth_test():
+    
+    windowsize = 1.5 # AU
+    sun = body(0,0,0,0,1,"white")
+    earth = body(1,0,0,2*np.pi,3e-6,"white")
+    bodies = [sun,earth]
+    return bodies
+
 # # defining universal animation protocall
 # def ani_setup():
 #     fig, ax = plt.subplots(figsize=(6,6),facecolor='black')

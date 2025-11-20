@@ -12,7 +12,7 @@ from Body import body
 from Body import eps
 
 # setting the "far" parameter and softening parameter
-theta = 1
+theta = 0.7
 
 # defining the class for a Barnes-Hut tree object
 class tree:

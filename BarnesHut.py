@@ -28,12 +28,10 @@ order = 4
 meth = 'BH'
 N = 100 # number of bodies
 dt = 0.1 # years
-step = 200 # number of steps
-windowsize = 10 # AU
+step = 20 # number of steps
+windowsize = 1.5 # AU
 
-
-
-bodies = init.makebodies_test(N)
+bodies = init.earth_test()
 
 # def make_body():
 #     #rx = windowsize * np.random.uniform()
