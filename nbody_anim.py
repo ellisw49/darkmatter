@@ -51,9 +51,6 @@ def animate_simulation(
     fig, ax = plt.subplots(figsize=figsize, facecolor=bg)
     ax.set_facecolor(bg)
 
-    # store energies here
-    energy_arr = []
-
     # Initial positions
     xs, ys = _extract_xy(bodies)
     scat = ax.scatter(xs, ys, s=markersize, c=point_color)
@@ -67,12 +64,8 @@ def animate_simulation(
     ax.set_ylim(limits[2], limits[3])
 
     def update(frame):
-        # added the energy return to each animation step
-        E = step_function(bodies, dt)
+        step_function(bodies, dt)
         xs, ys = _extract_xy(bodies)
-        
-        # adding the energy at this timestep to the total array
-        energy_arr.append(E)
         
         #print(xs, ys)
         
@@ -85,7 +78,7 @@ def animate_simulation(
         update,
         frames=frames,
         interval=interval,
-        blit=True
+        blit=False
     )
 
     if save is not None:
@@ -93,5 +86,5 @@ def animate_simulation(
         writer = PillowWriter(fps=20)
         anim.save(save, writer=writer)
         print("Saved.")
-        plt.close(fig)
-    return anim, np.array(energy_arr)
+
+    return anim
