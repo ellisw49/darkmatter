@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 # call body.py
-from Body import body 
+from Body2 import body 
 import Initialize as init
 from nbody_anim import animate_simulation
 
@@ -47,6 +47,11 @@ def direct_step(bodies, dt):
     
 
 # run animation
+
+import time 
+
+start = time.perf_counter()   
+
 animate_simulation(
     bodies=bodies,
     step_function=direct_step,
@@ -54,7 +59,9 @@ animate_simulation(
     dt=dt,
     save="direct.gif"
 )
-plt.show()
+
+end = time.perf_counter()
+print(f"100 Steps 500 Bodies Direct RK4: {end - start:.4f} seconds")
 
 
 # defining particle properties
